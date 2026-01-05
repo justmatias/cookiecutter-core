@@ -1,0 +1,10 @@
+{
+  "project_name": "My Awesome Project",
+  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '-').replace('_', '-') }}",
+  "module_name": "{{ cookiecutter.project_slug.lower().replace('-', '_') }}",
+  "short_description": "A brief description of my awesome project.",
+  "author_name": "Matias Gimenez",
+  "author_email": "matiasgimenez.dev@gmail.com",
+  "version": "0.1.0",
+  "python_version": "3.13"
+}
