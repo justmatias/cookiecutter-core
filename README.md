@@ -13,7 +13,7 @@ A production-ready Cookiecutter template for modern Python projects with Ruff, P
 2. Generate a new project using this template:
 
     ```bash
-    cookiecutter https://github.com/matiagimenez/cookiecutter-in-agentic-mode
+    cookiecutter https://github.com/matiagimenez/cookiecutter-core
     # OR if you have it locally
     cookiecutter .
     ```
@@ -36,3 +36,4 @@ A production-ready Cookiecutter template for modern Python projects with Ruff, P
 *   **Poetry/UV** friendly structure (uses `pyproject.toml`).
 *   **Ruff, Pylint, MyPy** configured.
 *   **poethepoet** task runner configured.
+
