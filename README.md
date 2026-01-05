@@ -1,6 +1,6 @@
-# Cookiecutter Deep Research Agent
+# Cookiecutter Core
 
-A Cookiecutter template for creating a Deep Research Agent project.
+A production-ready Cookiecutter template for modern Python projects with Ruff, Pylint, MyPy, and poethepoet configuration.
 
 ## Usage
 
@@ -33,8 +33,6 @@ A Cookiecutter template for creating a Deep Research Agent project.
 
 ## Features
 
-*   **LangGraph** powered cyclic research agent.
-*   **Streamlit** dashboard for visualization.
-*   **Docker Compose** ready.
 *   **Poetry/UV** friendly structure (uses `pyproject.toml`).
 *   **Ruff, Pylint, MyPy** configured.
+*   **poethepoet** task runner configured.
