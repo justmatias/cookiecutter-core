@@ -39,9 +39,7 @@ repos:
           - pydantic==2.12.4
           - pydantic-settings==2.12
           - uvicorn==0.38.0
-          - lyricsgenius==3.7.5
           - python-dotenv==1.2.1
-          - spotipy==2.25.2
           - streamlit==1.52.2
           - pytest==9.0.2
           - polyfactory==3.2.0
@@ -55,9 +53,7 @@ repos:
           - loguru==0.7.3
           - pydantic==2.12.4
           - pydantic-settings==2.12
-          - lyricsgenius==3.7.5
           - python-dotenv==1.2.1
-          - spotipy==2.25.2
           - streamlit==1.52.2
           - pytest==9.0.2
           - polyfactory==3.2.0
