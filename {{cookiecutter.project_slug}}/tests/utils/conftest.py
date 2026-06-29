@@ -2,12 +2,11 @@ from collections.abc import Generator
 
 import pytest
 
-from deep_research_agent.utils import LogLevel, get_logger
+from {{ cookiecutter.module_name }}.utils import LogLevel, logger
 
 
 @pytest.fixture
 def capture_logs() -> Generator[list[str]]:
-    logger = get_logger()
     output = []
     handler_id = logger.add(output.append)
     yield output

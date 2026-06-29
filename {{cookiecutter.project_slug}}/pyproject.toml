@@ -17,14 +17,13 @@ dependencies = ["loguru>=0.7.3", "pydantic>=2.12.4", "pydantic-settings>=2.12"]
 
 
 [project.urls]
-repository = "https://github.com/{{ cookiecutter.author_name | lower | replace(' ', '-') }}/{{ cookiecutter.project_slug }}"
+repository = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}"
 
 [tool.setuptools]
 packages = ["{{ cookiecutter.module_name }}"]
 
 [dependency-groups]
 dev = [
-  "ipykernel>=7.1",
   "poethepoet>=0.37",
   "pre-commit>=4.4",
   "pytest>=9.0.2",
@@ -83,8 +82,7 @@ disable = [
   "broad-exception-caught",
   "import-error",
 ]
-extension-pkg-allow-list = ["dependency_injector"]
-generated-members = ["dependency_injector.*"]
+
 load-plugins = [
   "pylint.extensions.bad_builtin",
   "pylint.extensions.code_style",
@@ -107,7 +105,7 @@ load-plugins = [
 ##################################
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "{{ cookiecutter.python_version }}"
 disallow_untyped_defs = true
 show_error_codes = true
 no_implicit_optional = true
@@ -128,7 +126,7 @@ omit = ["{{ cookiecutter.module_name }}/ui/*"]
 ##################################
 
 [tool.poe.tasks]
-dev = "streamlit run {{ cookiecutter.module_name }}/main.py"
+dev = "uv run python -m {{ cookiecutter.module_name }}.main"
 format = "pre-commit run --all-files --verbose"
 build = "pip install -e ."
 test = "pytest --cov={{ cookiecutter.module_name }} --cov-report=term-missing:skip-covered"

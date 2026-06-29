@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import sys
 from enum import Enum
-from functools import cache
 
-from loguru import logger
+from loguru import logger as _logger
 from loguru._logger import Logger
 
 
@@ -14,17 +15,17 @@ class LogLevel(Enum):
     CRITICAL = "CRITICAL"
 
 
-@cache
 def get_logger() -> Logger:
-    logger.remove()
-    logger.add(
+    from .settings import Settings  # noqa: PLC0415 — deferred to break circular import
+
+    _logger.remove()
+    _logger.add(
         sys.stdout,
-        level="DEBUG",
+        level=Settings.log_level.value,
         format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
+        enqueue=True,
     )
-    return logger  # type: ignore[return-value]
+    return _logger  # type: ignore[return-value]
 
 
-def log(message: str, level: LogLevel = LogLevel.INFO) -> None:
-    logger_ = get_logger()
-    logger_.log(level.value, message)
+logger = get_logger()

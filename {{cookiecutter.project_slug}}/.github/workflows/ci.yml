@@ -63,7 +63,7 @@ jobs:
       - name: Setup environment
         uses: ./.github/actions/setup-python-env
         with:
-          python-version: '3.13'
+          python-version: '{{ cookiecutter.python_version }}'
 
       - name: Autoupdate pre-commit hooks
         run: uv run pre-commit autoupdate
@@ -96,7 +96,7 @@ jobs:
       - name: Setup environment
         uses: ./.github/actions/setup-python-env
         with:
-          python-version: '3.13'
+          python-version: '{{ cookiecutter.python_version }}'
 
       - name: Get proposed version
         id: proposed
@@ -139,7 +139,7 @@ jobs:
       - name: Setup environment
         uses: ./.github/actions/setup-python-env
         with:
-          python-version: '3.13'
+          python-version: '{{ cookiecutter.python_version }}'
 
       - name: Bump version and update changelog
         id: release
@@ -171,7 +171,7 @@ jobs:
       - name: Setup environment
         uses: ./.github/actions/setup-python-env
         with:
-          python-version: '3.13'
+          python-version: '{{ cookiecutter.python_version }}'
 
       - name: Build distributions
         run: uv build
