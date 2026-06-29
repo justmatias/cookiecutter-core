@@ -2,7 +2,7 @@ from collections.abc import Generator
 
 import pytest
 
-from {{ cookiecutter.module_name }}.utils import LogLevel, logger
+from {{ cookiecutter.module_name }}.utils import logger
 
 
 @pytest.fixture
@@ -15,14 +15,14 @@ def capture_logs() -> Generator[list[str]]:
 
 @pytest.fixture(
     params=[
-        LogLevel.DEBUG,
-        LogLevel.INFO,
-        LogLevel.WARNING,
-        LogLevel.ERROR,
-        LogLevel.CRITICAL,
+        "DEBUG",
+        "INFO",
+        "WARNING",
+        "ERROR",
+        "CRITICAL",
     ]
 )
-def log_level(request: pytest.FixtureRequest) -> LogLevel:
+def log_level(request: pytest.FixtureRequest) -> str:
     return request.param  # type: ignore[no-any-return]
 
 

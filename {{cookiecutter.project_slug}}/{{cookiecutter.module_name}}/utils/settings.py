@@ -7,7 +7,7 @@ from polyfactory.factories.pydantic_factory import ModelFactory
 from pydantic import ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from .logger import LogLevel, logger
+from .logger import logger
 
 
 class AppSettings(BaseSettings):
@@ -19,7 +19,6 @@ class AppSettings(BaseSettings):
     )
 
     ENVIRONMENT: Literal["testing", "production"] = "testing"
-    LOG_LEVEL: LogLevel = LogLevel.INFO
 
 
 class AppSettingsFactory(ModelFactory[AppSettings]):

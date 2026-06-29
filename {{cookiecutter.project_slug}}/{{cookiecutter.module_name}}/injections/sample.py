@@ -3,26 +3,20 @@ import inject
 from .config import InjectionConfig
 
 
-class SampleServiceBase:
-    def __init__(self):
-        pass
+class SampleServiceBase: ...
 
 
-class SampleService(SampleServiceBase):
-    def __init__(self):
-        super().__init__()
+class SampleService(SampleServiceBase): ...
 
 
-class FakeSampleService(SampleServiceBase):
-    def __init__(self):
-        super().__init__()
+class FakeSampleService(SampleServiceBase): ...
 
 
-def production_sample_service() -> SampleServiceBase:
+def production_sample_service() -> None:
     inject.bind_to_provider(SampleServiceBase, SampleService)
 
 
-def test_sample_service() -> SampleServiceBase:
+def test_sample_service() -> None:
     inject.bind_to_provider(SampleServiceBase, FakeSampleService)
 
 
