@@ -3,6 +3,8 @@ from functools import lru_cache
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from .logger import LogLevel
+
 
 class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -11,10 +13,7 @@ class AppSettings(BaseSettings):
         case_sensitive=False,
     )
 
-    TEST_SETTING: str = Field(
-        default="TEST_SETTING",
-        description="Test setting",
-    )
+    log_level: LogLevel = Field(default=LogLevel.DEBUG)
 
 
 @lru_cache

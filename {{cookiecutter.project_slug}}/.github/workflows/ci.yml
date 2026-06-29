@@ -9,134 +9,172 @@ on:
 permissions:
   id-token: write
   contents: write
+  pull-requests: write
   actions: write
 
 jobs:
   lint:
-    name: Lint
+    name: Lint (Python {{ cookiecutter.python_version }})
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-        env:
-          GH_TOKEN: {{ '${{' }} secrets.GH_TOKEN }}
+      - uses: actions/checkout@v7
         with:
-          token: {{ '${{' }} env.GH_TOKEN }}
+          token: {{ '${{' }} secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Set up Python {{ cookiecutter.python_version }}
-        uses: actions/setup-python@v6
+      - name: Setup environment
+        uses: ./.github/actions/setup-python-env
         with:
           python-version: '{{ cookiecutter.python_version }}'
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          version: '0.9.11'
-          python-version: '{{ cookiecutter.python_version }}'
-
-      - name: Install dependencies
-        run: |
-          uv sync --all-groups --frozen
 
       - name: Run lint and format checks
-        id: format
-        run: |
-          uv run poe format
+        run: uv run poe format
 
   test:
-    name: Test
+    name: Test (Python {{ cookiecutter.python_version }})
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
-          token: {{ '${{' }} secrets.GH_TOKEN }}
+          token: {{ '${{' }} secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Set up Python {{ cookiecutter.python_version }}
-        uses: actions/setup-python@v6
+      - name: Setup environment
+        uses: ./.github/actions/setup-python-env
         with:
           python-version: '{{ cookiecutter.python_version }}'
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          version: '0.9.11'
-          python-version: '{{ cookiecutter.python_version }}'
-
-      - name: Install dependencies
-        run: |
-          uv sync --all-groups --frozen
 
       - name: Run unit tests
-        run: |
-          uv run poe test
+        env:
+          SECRET_KEY: {{ '${{' }} secrets.SECRET_KEY }}
+        run: uv run poe test
 
-  requirements:
-    name: Requirements
-    if: github.ref != 'refs/heads/main'
+  update-hooks:
+    name: Update pre-commit hooks
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
-          token: {{ '${{' }} secrets.GH_TOKEN }}
-          fetch-depth: 0
+          token: {{ '${{' }} secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
           ref: {{ '${{' }} github.head_ref }}
+          fetch-depth: 0
 
-      - name: Set up Python {{ cookiecutter.python_version }}
-        uses: actions/setup-python@v6
+      - name: Setup environment
+        uses: ./.github/actions/setup-python-env
         with:
-          python-version: '{{ cookiecutter.python_version }}'
+          python-version: '3.13'
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          version: '0.9.11'
-          python-version: '{{ cookiecutter.python_version }}'
+      - name: Autoupdate pre-commit hooks
+        run: uv run pre-commit autoupdate
 
-      - name: Install dependencies
-        run: |
-          uv sync --all-groups --frozen
+      - name: Sync uv additional dependencies
+        run: uv run pre-commit run hookpin --all-files || true
 
-      - name: Generate requirements.txt
-        run: |
-          uv pip compile pyproject.toml -o requirements.txt
-
-      - name: Commit and push requirements.txt
+      - name: Commit updated hooks
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add requirements.txt
-          git diff --staged --quiet || git commit -m "chore(config): update requirements.txt"
-          git push origin HEAD:{{ '${{' }} github.head_ref }}
+          git add -A
+          git diff --staged --quiet || git commit -m "chore(config): update pre-commit hooks"
+          git push origin "HEAD:${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+
+  breaking-changes:
+    name: Detect breaking changes
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [lint, test]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          token: {{ '${{' }} secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: '3.13'
+
+      - name: Get proposed version
+        id: proposed
+        run: |
+          VERSION=$(pipx run --spec python-semantic-release semantic-release --noop version --print)
+          echo "proposed=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Run pycracks
+        id: pycracks
+        continue-on-error: true
+        env:
+          SECRET_KEY: {{ '${{' }} secrets.SECRET_KEY }}
+        run: |
+          pipx run pycracks \
+            --path "tests" \
+            --target-version "{{ '${{' }} steps.proposed.outputs.proposed }}" \
+            --test-command "uv run poe test"
+
+      - name: Create breaking change commit
+        if: steps.pycracks.outcome == 'failure'
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git commit --allow-empty \
+            -m "feat!: breaking change detected [skip ci]"
+          git push origin main
 
   versioning:
     name: Versioning
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    needs: [breaking-changes]
     steps:
-      - uses: actions/checkout@v6
-        env:
-          GH_TOKEN: {{ '${{' }} secrets.GH_TOKEN }}
+      - uses: actions/checkout@v7
         with:
-          token: {{ '${{' }} env.GH_TOKEN }}
+          token: {{ '${{' }} secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          ref: main
           fetch-depth: 0
 
-      - name: Set up Python {{ cookiecutter.python_version }}
-        uses: actions/setup-python@v6
+      - name: Setup environment
+        uses: ./.github/actions/setup-python-env
         with:
-          python-version: '{{ cookiecutter.python_version }}'
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          version: '0.9.11'
-          python-version: '{{ cookiecutter.python_version }}'
-
-      - name: Install dependencies
-        run: |
-          uv sync --all-groups --frozen
+          python-version: '3.13'
 
       - name: Bump version and update changelog
+        id: release
         uses: python-semantic-release/python-semantic-release@v9.21.1
         with:
-          github_token: {{ '${{' }} secrets.GH_TOKEN }}
+          github_token: {{ '${{' }} secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+
+    outputs:
+      released: {{ '${{' }} steps.release.outputs.released }}
+      version: {{ '${{' }} steps.release.outputs.version }}
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && needs.versioning.outputs.released == 'true'
+    needs: [versioning]
+    environment:
+      name: pypi
+      url: https://pypi.org/p/{{ cookiecutter.project_slug }}
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          token: {{ '${{' }} secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: '3.13'
+
+      - name: Build distributions
+        run: uv build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
