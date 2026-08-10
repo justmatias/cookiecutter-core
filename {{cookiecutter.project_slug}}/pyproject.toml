@@ -130,9 +130,12 @@ fail_under = 80
 
 [tool.poe.tasks]
 dev = "uv run python -m {{ cookiecutter.module_name }}.main"
-format = "pre-commit run --all-files --verbose"
 build = "pip install -e ."
 test = "pytest --cov={{ cookiecutter.module_name }} --cov-report=term-missing:skip-covered"
+
+[tool.poe.tasks.format]
+help = "Sync pre-commit hook pins with the lockfile, then lint and format"
+shell = "pre-commit run hookpin --all-files || true; pre-commit run --all-files --verbose"
 
 
 ##################################

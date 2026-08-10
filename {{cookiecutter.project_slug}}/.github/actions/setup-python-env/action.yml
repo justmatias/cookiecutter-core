@@ -32,5 +32,4 @@ runs:
     - name: Install dependencies
       if: inputs.install-dependencies == 'true'
       shell: bash
-      run: uv sync --all-groups --frozen
-{% endraw %}
+      run: uv sync --all-groups --frozen{% endraw %}
