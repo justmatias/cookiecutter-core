@@ -119,7 +119,10 @@ disable_error_code = ["var-annotated"]
 ##################################
 
 [tool.coverage.run]
-omit = ["{{ cookiecutter.module_name }}/ui/*"]
+omit = ["{{ cookiecutter.module_name }}/main.py", "{{ cookiecutter.module_name }}/injections/*"]
+
+[tool.coverage.report]
+fail_under = 80
 
 ##################################
 # poe tasks configuration        #

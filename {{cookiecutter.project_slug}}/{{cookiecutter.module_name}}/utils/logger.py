@@ -1,21 +1,14 @@
 from __future__ import annotations
 
+import os
 import sys
-from enum import Enum
 
-from loguru import logger as _logger
-from loguru._logger import Logger
-from .settings import Settings 
+from loguru import logger
 
-def get_logger() -> Logger:
-    _logger.remove()
-    _logger.add(
-        sys.stdout,
-        level="DEBUG",
-        format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-        enqueue=True,
-    )
-    return _logger  # type: ignore[return-value]
-
-
-logger = get_logger()
+logger.remove()
+logger.add(
+    sys.stdout,
+    level=os.getenv("LOG_LEVEL", "INFO"),
+    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
+    enqueue=True,
+)

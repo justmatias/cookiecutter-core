@@ -81,9 +81,24 @@ jobs:
           python-version: '{{ cookiecutter.python_version }}'
 
       - name: Run unit tests
-        env:
-          SECRET_KEY: {{ '${{' }} secrets.SECRET_KEY }}
         run: uv run poe test
+
+  security:
+    name: Dependency vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          token: {{ '${{' }} secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: '{{ cookiecutter.python_version }}'
+
+      - name: Run pip-audit
+        run: uvx pip-audit --local
 
   update-hooks:
     name: Update pre-commit hooks
@@ -143,8 +158,6 @@ jobs:
       - name: Run pycracks
         id: pycracks
         continue-on-error: true
-        env:
-          SECRET_KEY: {{ '${{' }} secrets.SECRET_KEY }}
         run: |
           pipx run pycracks \
             --path "tests" \
