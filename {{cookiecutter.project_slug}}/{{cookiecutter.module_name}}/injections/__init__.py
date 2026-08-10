@@ -29,6 +29,6 @@ def clear_injections() -> None:
 
 __all__ = [
     "InjectionConfig",
-    "setup_injections",
     "clear_injections",
+    "setup_injections",
 ]

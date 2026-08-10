@@ -37,12 +37,12 @@ def get_settings() -> AppSettings:
         overrides = {key: value for key, value in environments if value}
         logger.debug(f"Overriding factory values from .env: {list(overrides.keys())}")
 
-        return AppSettingsFactory.build(**overrides)  # type: ignore[arg-type]
+        return AppSettingsFactory.build(**overrides)  # type: ignore[no-any-return]
 
     def load_production_settings() -> AppSettings:  # pragma: no cover
         logger.info("Loading production settings...")
         try:
-            return AppSettings()  # type: ignore[call-arg]
+            return AppSettings()
         except ValidationError as e:
             logger.error(f"Error loading production settings: {e}")
             raise

@@ -15,14 +15,14 @@ def capture_logs() -> Generator[list[str]]:
 
 @pytest.fixture(
     params=[
-        "DEBUG",
-        "INFO",
-        "WARNING",
-        "ERROR",
-        "CRITICAL",
+        "debug",
+        "info",
+        "warning",
+        "error",
+        "critical",
     ]
 )
-def log_level(request: pytest.FixtureRequest) -> str:
+def log_method(request: pytest.FixtureRequest) -> str:
     return request.param  # type: ignore[no-any-return]
 
 
