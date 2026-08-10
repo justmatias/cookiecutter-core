@@ -5,6 +5,7 @@ on:
     branches: ['main']
   pull_request:
     branches: ['main']
+    types: [opened, synchronize, reopened, edited]
 
 permissions:
   id-token: write
@@ -13,6 +14,41 @@ permissions:
   actions: write
 
 jobs:
+  pr-title:
+    name: Standardize PR title
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Sync title with single commit and validate format
+        env:
+          GH_TOKEN: {{ '${{' }} secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          PR_NUMBER: {{ '${{' }} github.event.pull_request.number }}
+          REPO: {{ '${{' }} github.repository }}
+        run: |
+          COMMIT_COUNT=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json commits --jq '.commits | length')
+
+          if [ "$COMMIT_COUNT" -eq 1 ]; then
+            COMMIT_MSG=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json commits --jq '.commits[0].messageHeadline')
+            CURRENT_TITLE=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json title --jq '.title')
+            if [ "$CURRENT_TITLE" != "$COMMIT_MSG" ]; then
+              echo "Renaming PR title to match its single commit: $COMMIT_MSG"
+              gh pr edit "$PR_NUMBER" --repo "$REPO" --title "$COMMIT_MSG"
+            fi
+            TITLE="$COMMIT_MSG"
+          else
+            TITLE=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json title --jq '.title')
+          fi
+
+          echo "Validating PR title: $TITLE"
+          PATTERN='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9._-]+\))?!?: .+'
+          if ! echo "$TITLE" | grep -qE "$PATTERN"; then
+            echo "::error::PR title '$TITLE' does not follow Conventional Commits format, e.g. 'feat(scope): add thing'."
+            exit 1
+          fi
+
   lint:
     name: Lint (Python {{ cookiecutter.python_version }})
     runs-on: ubuntu-latest
